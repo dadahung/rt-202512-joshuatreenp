@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joshua Tree Road Trip Planner</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome CDN for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Font: Inter for a clean, modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom MUJI Minimalist Styling */
+        :root {
+            --muji-offwhite: #f7f5f1;
+            --muji-grey: #e8e8e8;
+            --muji-dark: #333333;
+            --muji-accent: #a3b18a; /* Soft earth tone / Olive */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--muji-offwhite);
+            color: var(--muji-dark);
+            min-height: 100vh;
+        }
+        .muji-card {
+            background-color: white;
+            border: 1px solid var(--muji-grey);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Very subtle shadow */
+            transition: all 0.2s;
+        }
+        .muji-button {
+            background-color: var(--muji-dark);
+            color: white;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            transition: background-color 0.15s;
+        }
+        .muji-button:hover {
+            background-color: #555555;
+        }
+        .muji-input {
+            border: 1px solid var(--muji-grey);
+            border-radius: 6px;
+            padding: 0.5rem;
+            background-color: var(--muji-offwhite);
+            transition: border-color 0.15s;
+        }
+        .muji-input:focus {
+            outline: none;
+            border-color: var(--muji-accent);
+        }
+        /* Mobile-friendly fixed navigation */
+        .muji-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            background-color: white;
+            border-top: 1px solid var(--muji-grey);
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+        }
+        /* Itinerary Timeline Styling */
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: var(--muji-grey);
+        }
+        .timeline-item:last-child::before {
+            /* Stop the line on the last item */
+            height: calc(100% - 1.5rem);
+        }
+        .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background-color: white;
+            border: 3px solid var(--muji-accent);
+            z-index: 1;
+        }
+        /* Prominent highlight color for assembly/travel */
+        .highlight-dot {
+             border-color: #ef4444 !important; /* Tailwind red-500 */
+             background-color: #fee2e2 !important; /* Tailwind red-100 */
+        }
+        .map-link-btn {
+            background-color: var(--muji-grey);
+            color: var(--muji-dark);
+            border: 1px solid #d1d5db; /* Light grey border */
+            padding: 0.3rem 0.6rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem; /* text-xs */
+            font-weight: 500;
+            border-radius: 4px;
+            transition: background-color 0.15s, border-color 0.15s;
+        }
+        .map-link-btn:hover {
+            background-color: #d1d5db;
+        }
+        .sub-nav-button {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px; /* rounded-full */
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .sub-nav-active {
+            background-color: var(--muji-dark);
+            color: white;
+        }
+        .sub-nav-inactive {
+            background-color: var(--muji-grey);
+            color: var(--muji-dark);
+        }
+    </style>
+</head>
+<body class="pb-20">
+    <div id="app" class="max-w-xl mx-auto p-4">
+
+        <!-- Header -->
+        <header class="text-center py-4 mb-4">
+            <h1 class="text-2xl font-light text-gray-700">Joshua Tree Road Trip</h1>
+            <p class="text-sm text-gray-500">Dec 28 - Dec 30 | Irvine, CA</p>
+            <p class="text-xs mt-1 px-4 py-2 bg-stone-100 rounded-lg text-gray-600">
+                <i class="fas fa-home mr-1"></i> Rental: 4949 1st Street East, Joshua Tree, CA 92252
+            </p>
+        </header>
+
+        <!-- Dynamic Content Area -->
+        <main id="content" class="space-y-6"></main>
+
+        <!-- Fixed Bottom Navigation -->
+        <nav class="muji-nav flex justify-around p-2">
+            <button onclick="navigate('itinerary')" class="flex flex-col items-center text-xs p-1 text-gray-500 hover:text-muji-dark">
+                <i class="fas fa-road text-lg"></i>
+                <span class="mt-1">Itinerary</span>
+            </button>
+            <button onclick="navigate('guide')" class="flex flex-col items-center text-xs p-1 text-gray-500 hover:text-muji-dark">
+                <i class="fas fa-map-marked-alt text-lg"></i>
+                <span class="mt-1">Guide</span>
+            </button>
+            <button onclick="navigate('wallet')" class="flex flex-col items-center text-xs p-1 text-gray-500 hover:text-muji-dark">
+                <i class="fas fa-wallet text-lg"></i>
+                <span class="mt-1">Wallet</span>
+            </button>
+            <button onclick="navigate('lists')" class="flex flex-col items-center text-xs p-1 text-gray-500 hover:text-muji-dark">
+                <i class="fas fa-list-check text-lg"></i>
+                <span class="mt-1">Lists</span>
+            </button>
+            <button onclick="navigate('info')" class="flex flex-col items-center text-xs p-1 text-gray-500 hover:text-muji-dark">
+                <i class="fas fa-circle-info text-lg"></i>
+                <span class="mt-1">Info</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <script>
+        const contentDiv = document.getElementById('content');
+        // All application data stored here
+        let appData = {
+            expenses: [],
+            checklist: [],
+            notes: []
+        };
+        let currentPage = 'itinerary';
+        let itinerarySubPage = 'daily'; // 'daily' or 'attractions'
+
+        // --- Data Definitions (Itinerary and Guide) ---
+
+        const itinerary = [
+            // Day 1: Saturday, December 28th (Focus on West Entrance)
+            { day: 1, date: '12/28 (Sat)', time: '9:00 AM', activity: 'Depart Irvine', type: 'assembly', location: 'Irvine, CA', mapLink: 'https://maps.app.goo.gl/9q9h8gT7t9g7Y2Rz6' },
+            { day: 1, date: '12/28 (Sat)', time: '11:30 AM', activity: 'West Entrance & Visitor Center', type: 'sight', location: 'Joshua Tree Visitor Center', mapLink: 'https://maps.app.goo.gl/y2X8mGZp3vLw8vSFA' },
+            { day: 1, date: '12/28 (Sat)', time: '1:30 PM', activity: 'Hidden Valley Nature Trail (1-mile easy loop)', type: 'hike', location: 'Hidden Valley Nature Trail', mapLink: 'https://maps.app.goo.gl/wJ7rG5k8h8wN6K1h7' },
+            { day: 1, date: '12/28 (Sat)', time: '2:30 PM', activity: 'Barker Dam Nature Trail (1.1-mile easy loop)', type: 'hike', location: 'Barker Dam Nature Trail', mapLink: 'https://maps.app.goo.gl/bM5K5YQ8g4wM5K1h7' },
+            { day: 1, date: '12/28 (Sat)', time: '4:00 PM', activity: 'Keys View Scenic Stop', type: 'sight', location: 'Keys View', mapLink: 'https://maps.app.goo.gl/V4xT8bB6xT3qG8XN8' },
+            { day: 1, date: '12/28 (Sat)', time: '5:00 PM', activity: 'Check-in to Rental', type: 'accommodation', location: '4949 1st Street East, Joshua Tree, CA 92252', mapLink: 'https://maps.app.goo.gl/g7tX7qN7T9z4Y2Rz6' },
+            // Day 2: Sunday, December 29th (Focus on Central & East)
+            { day: 2, date: '12/29 (Sun)', time: '9:00 AM', activity: 'Skull Rock & Jumbo Rocks (Easy Scramble/Photo)', type: 'sight', location: 'Skull Rock', mapLink: 'https://maps.app.goo.gl/K6s3jH8aB4Q7sJ8s9' },
+            { day: 2, date: '12/29 (Sun)', time: '10:00 AM', activity: 'Cholla Cactus Garden (0.25-mile easy loop)', type: 'sight', location: 'Cholla Cactus Garden', mapLink: 'https://maps.app.goo.gl/L9uK8pP7aH4yW2jP7' },
+            { day: 2, date: '12/29 (Sun)', time: '11:30 AM', activity: 'Arch Rock Nature Trail (0.5-mile easy loop)', type: 'hike', location: 'Arch Rock Nature Trail', mapLink: 'https://maps.app.goo.gl/S4eW5oT3rK6mX8hE9' },
+            { day: 2, date: '12/29 (Sun)', time: '2:00 PM', activity: 'Cottonwood Spring Oasis (South Entrance Area)', type: 'sight', location: 'Cottonwood Spring Oasis', mapLink: 'https://maps.app.goo.gl/S9yJ7hR4kK6mX8hE9' },
+            { day: 2, date: '12/29 (Sun)', time: '6:30 PM', activity: 'Stargazing / Dinner', type: 'leisure', location: 'Rental / Local area', mapLink: 'https://maps.app.goo.gl/g7tX7qN7T9z4Y2Rz6' },
+            // Day 3: Monday, December 30th (Return via Palm Desert)
+            { day: 3, date: '12/30 (Mon)', time: '8:30 AM', activity: 'Check-out & Depart for Palm Desert', type: 'assembly', location: 'Rental', mapLink: 'https://maps.app.goo.gl/g7tX7qN7T9z4Y2Rz6' },
+            { day: 3, date: '12/30 (Mon)', time: '9:30 AM', activity: 'The Living Desert Zoo and Gardens', type: 'attraction', location: 'The Living Desert Zoo and Gardens', mapLink: 'https://maps.app.goo.gl/5r8zR6mG6pD4pC8P9' },
+            { day: 3, date: '12/30 (Mon)', time: '1:30 PM', activity: 'Indian Canyons (Palm Canyons) - Easy Walk', type: 'hike', location: 'Indian Canyons, Palm Springs', mapLink: 'https://maps.app.goo.gl/rW8yZ6mG6pD4pC8P9' },
+            { day: 3, date: '12/30 (Mon)', time: '3:30 PM', activity: 'Begin Drive to Irvine', type: 'assembly', location: 'Palm Springs, CA', mapLink: 'https://maps.app.goo.gl/nL8rS6mG6pD4pC8P9' },
+        ];
+
+        // Guide data for the GUIDE module
+        const guideSights = [
+            {
+                name: "Hidden Valley Nature Trail",
+                description: "This iconic 1-mile loop is an easy, flat walk enclosed by massive rock formations, said to be an old cattle rustlers' hideout. It perfectly showcases the area's geology and flora, including many large Joshua Trees. The seclusion makes it a great spot for beginners and non-hikers. Look for the picnic area, which is surrounded by massive monzogranite boulders.",
+                map: 'https://www.openstreetmap.org/export/embed.html?bbox=-116.162,34.015,-116.152,34.025&layer=mapnik&marker=34.020,-116.157'
+            },
+            {
+                name: "Cholla Cactus Garden",
+                description: "This unique field of teddy bear cholla marks the transition zone between the Mojave and Colorado Deserts. The cholla's barbed segments detach easily, appearing to 'jump' onto passersby. This short, flat loop trail (0.25 miles) is a popular photo opportunity, especially at sunset when the soft light illuminates the cacti, creating a beautiful golden glow. Stay on the designated path!",
+                map: 'https://www.openstreetmap.org/export/embed.html?bbox=-115.8208,33.9300,-115.8108,33.9400&layer=mapnik&marker=33.9350,-115.8158'
+            },
+            {
+                name: "The Living Desert Zoo and Gardens",
+                description: "Located on the return route in Palm Desert, this conservation-focused botanical garden is dedicated to desert ecosystems of the world (primarily North American and African). It offers a stunning, lush contrast to the barren Joshua Tree landscape. Key features include the giraffe feeding, bighorn sheep exhibit, and the walking trails through the California Fan Palms.",
+                map: 'https://www.openstreetmap.org/export/embed.html?bbox=-116.4024,33.7259,-116.3924,33.7359&layer=mapnik&marker=33.7309,-116.3974'
+            },
+            {
+                name: "Indian Canyons (Palm Canyons)",
+                description: "Managed by the Agua Caliente Band of Cahuilla Indians, Palm Canyon features a massive concentration of California Fan Palms, fed by an underground stream. The easy walk down into the canyon floor provides a unique, lush contrast to the surrounding arid environment, making it a perfect final stop before heading back to Irvine.",
+                map: 'https://www.openstreetmap.org/export/embed.html?bbox=-116.5540,33.7840,-116.5440,33.7940&layer=mapnik&marker=33.7890,-116.5490'
+            }
+        ];
+
+        // Initial checklist data for the LISTS module (including user essentials)
+        const initialChecklist = [
+            { item: 'Powerbank', checked: false },
+            { item: 'Charger', checked: false },
+            { item: 'USB Cable', checked: false },
+            { item: '4-days worth of clothes', checked: false },
+            { item: 'Park Pass / Cash for Entrance Fees', checked: false },
+            { item: 'Water & Snacks for the Road', checked: false },
+            { item: 'Sunscreen & Hat', checked: false },
+            { item: 'Layers for Cold Desert Nights', checked: false },
+            { item: 'Download Offline Maps (Poor cell service in JT)', checked: false }
+        ];
+
+        // --- Core Functions: LocalStorage Management ---
+
+        /** Loads data from LocalStorage or uses initial defaults. */
+        function loadData() {
+            try {
+                const storedExpenses = localStorage.getItem('jt_planner_expenses');
+                const storedChecklist = localStorage.getItem('jt_planner_checklist');
+                const storedNotes = localStorage.getItem('jt_planner_notes');
+
+                if (storedExpenses) appData.expenses = JSON.parse(storedExpenses);
+
+                if (storedChecklist) {
+                    appData.checklist = JSON.parse(storedChecklist);
+                    // Ensure the initial essential items are always present
+                    const currentItems = new Set(appData.checklist.map(i => i.item));
+                    initialChecklist.forEach(item => {
+                        if (!currentItems.has(item.item)) {
+                            appData.checklist.push(item);
+                        }
+                    });
+                } else {
+                    appData.checklist = initialChecklist;
+                }
+                if (storedNotes) appData.notes = JSON.parse(storedNotes);
+
+            } catch (e) {
+                console.error("Error loading data from LocalStorage:", e);
+                appData.checklist = initialChecklist;
+            }
+        }
+
+        /** Saves all current appData to LocalStorage. */
+        function saveData() {
+            try {
+                localStorage.setItem('jt_planner_expenses', JSON.stringify(appData.expenses));
+                localStorage.setItem('jt_planner_checklist', JSON.stringify(appData.checklist));
+                localStorage.setItem('jt_planner_notes', JSON.stringify(appData.notes));
+            } catch (e) {
+                console.error("Error saving data to LocalStorage:", e);
+                alertBox('Error: Could not save data. LocalStorage may be full.', 'error');
+            }
+        }
+
+        /** Simple custom alert/message box (no window.alert/confirm) */
+        function alertBox(message, type = 'info') {
+            const colors = {
+                info: 'bg-stone-100 text-stone-700',
+                success: 'bg-muji-accent text-white',
+                error: 'bg-red-500 text-white'
+            };
+            const box = document.createElement('div');
+            box.className = `fixed top-4 left-1/2 -translate-x-1/2 p-3 ${colors[type]} rounded-lg shadow-xl z-50 transition-all duration-300 opacity-0 text-sm`;
+            box.textContent = message;
+            document.body.appendChild(box);
+
+            // Animate in and out
+            setTimeout(() => {
+                box.classList.remove('opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                box.classList.add('opacity-0');
+                box.addEventListener('transitionend', () => box.remove());
+            }, 3000);
+        }
+
+        // --- View Navigation ---
+
+        function navigate(page) {
+            currentPage = page;
+            renderPage(page);
+            // Highlight active button in the bottom nav
+            document.querySelectorAll('.muji-nav button').forEach(btn => {
+                if (btn.getAttribute('onclick').includes(`'${page}'`)) {
+                    btn.classList.add('text-muji-dark', 'font-medium');
+                    btn.classList.remove('text-gray-500');
+                } else {
+                    btn.classList.add('text-gray-500');
+                    btn.classList.remove('text-muji-dark', 'font-medium');
+                }
+            });
+        }
+
+        function setItinerarySubPage(subPage) {
+            itinerarySubPage = subPage;
+            renderItinerary();
+        }
+
+        function renderPage(page) {
+            contentDiv.innerHTML = '';
+            let title = '';
+
+            // Reset main header for consistency
+            document.querySelector('header h1').textContent = 'Joshua Tree Road Trip';
+
+            switch (page) {
+                case 'itinerary':
+                    title = 'Trip Itinerary';
+                    renderItinerary();
+                    break;
+                case 'guide':
+                    title = 'Sights Guide';
+                    renderGuide();
+                    break;
+                case 'wallet':
+                    title = 'Trip Wallet';
+                    renderWallet();
+                    break;
+                case 'lists':
+                    title = 'Checklist & Notes';
+                    renderLists();
+                    break;
+                case 'info':
+                    title = 'Trip Information';
+                    renderInfo();
+                    break;
+                default:
+                    title = 'Welcome';
+                    renderItinerary();
+            }
+
+            // Update sub-heading title
+            document.querySelector('header h1').textContent = title;
+        }
+
+        // --- Module 1: ITINERARY (Daily Timeline & All Attractions List) ---
+
+        function renderItinerary() {
+            // Sub-navigation buttons (Requirement)
+            let subNavHtml = `
+                <div class="flex justify-center p-2 mb-4 space-x-3">
+                    <button onclick="setItinerarySubPage('daily')" class="sub-nav-button ${itinerarySubPage === 'daily' ? 'sub-nav-active' : 'sub-nav-inactive'}">
+                        <i class="fas fa-calendar-alt mr-1"></i> Daily Itinerary
+                    </button>
+                    <button onclick="setItinerarySubPage('attractions')" class="sub-nav-button ${itinerarySubPage === 'attractions' ? 'sub-nav-active' : 'sub-nav-inactive'}">
+                        <i class="fas fa-star mr-1"></i> All Attractions
+                    </button>
+                </div>
+            `;
+
+            if (itinerarySubPage === 'daily') {
+                contentDiv.innerHTML = subNavHtml + `<div class="p-2">${renderDailyItineraryTimeline()}</div>`;
+            } else {
+                contentDiv.innerHTML = subNavHtml + `<div class="p-2">${renderAllAttractionsList()}</div>`;
+            }
+        }
+
+        function renderDailyItineraryTimeline() {
+            let html = '';
+            let currentDay = 0;
+
+            itinerary.forEach(item => {
+                // New Day Header
+                if (item.day !== currentDay) {
+                    html += `<h2 class="text-lg font-medium mt-6 mb-2 pt-2 border-t border-gray-300">Day ${item.day}: ${item.date}</h2>`;
+                    currentDay = item.day;
+                }
+
+                const isAssembly = item.type === 'assembly';
+                const dotClass = isAssembly ? 'highlight-dot' : '';
+
+                // Generate Map/Driving buttons
+                let mapButtons = '';
+                if (item.mapLink) {
+                    // Open Location
+                    mapButtons += `<a href="${item.mapLink}" target="_blank" class="map-link-btn inline-flex items-center">
+                        <i class="fas fa-map-pin mr-1"></i> Open Location
+                    </a>`;
+                    // Start Driving (using Google Maps directions link)
+                    const drivingLink = `https://www.google.com/maps/dir/Current+Location/${encodeURIComponent(item.location)}`;
+                    mapButtons += `<a href="${drivingLink}" target="_blank" class="map-link-btn inline-flex items-center">
+                        <i class="fas fa-car mr-1"></i> Start Driving
+                    </a>`;
+                }
+
+                html += `
+                    <div class="timeline-item pb-4">
+                        <div class="timeline-dot ${dotClass}"></div>
+                        <div class="muji-card p-3 ml-2 ${isAssembly ? 'bg-red-50' : 'bg-white'}">
+                            <p class="text-sm text-gray-400 font-light">${item.time} ${isAssembly ? '<span class="text-red-500 font-medium ml-1"> (ASSEMBLY/TRAVEL)</span>' : ''}</p>
+                            <h3 class="font-semibold text-base">${item.activity}</h3>
+                            <p class="text-xs text-gray-500">${item.location}</p>
+                            <div class="mt-2 flex flex-wrap">
+                                ${mapButtons}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            return html;
+        }
+
+        function renderAllAttractionsList() {
+            const attractionTypes = ['sight', 'hike', 'attraction'];
+            const attractions = itinerary
+                .filter(item => attractionTypes.includes(item.type))
+                .sort((a, b) => a.activity.localeCompare(b.activity)); // Sort alphabetically
+
+            let html = '<div class="space-y-3">';
+
+            if (attractions.length === 0) {
+                html += '<p class="text-gray-500 italic text-center p-4">No attractions found in the itinerary.</p>';
+            } else {
+                attractions.forEach(item => {
+                    let mapButtons = '';
+                    if (item.mapLink) {
+                        const drivingLink = `https://www.google.com/maps/dir/Current+Location/${encodeURIComponent(item.location)}`;
+                        mapButtons += `<a href="${item.mapLink}" target="_blank" class="map-link-btn inline-flex items-center">
+                            <i class="fas fa-location-dot mr-1"></i> Location
+                        </a>`;
+                        mapButtons += `<a href="${drivingLink}" target="_blank" class="map-link-btn inline-flex items-center">
+                            <i class="fas fa-car mr-1"></i> Drive
+                        </a>`;
+                    }
+
+                    html += `
+                        <div class="muji-card p-4 bg-white">
+                            <h3 class="font-semibold text-base">${item.activity}</h3>
+                            <p class="text-xs text-gray-500">${item.location} (Day ${item.day})</p>
+                            <div class="mt-2 flex flex-wrap">
+                                ${mapButtons}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+
+        // --- Module 2: GUIDE ---
+
+        function renderGuide() {
+            let html = '<div class="space-y-8">';
+
+            guideSights.forEach(sight => {
+                // OpenStreetMap iframe embed for map visualization (functional requirement)
+                const mapIframe = sight.map ? `
+                    <div class="w-full h-48 mt-3 overflow-hidden rounded-lg border border-muji-grey">
+                        <!-- OpenStreetMap iframe for visualization -->
+                        <iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="${sight.map}" title="Map of ${sight.name}"></iframe>
+                    </div>
+                ` : '';
+
+                html += `
+                    <div class="muji-card p-5 bg-white space-y-3">
+                        <h2 class="text-xl font-semibold text-muji-dark border-b pb-2">${sight.name}</h2>
+                        <div class="text-sm leading-relaxed text-gray-700">
+                            ${sight.description.replace(/\n/g, '<br>')}
+                        </div>
+                        ${mapIframe}
+                        <p class="text-xs text-gray-500 italic pt-2 border-t mt-4">-- Travel Brochure Snippet --</p>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            contentDiv.innerHTML = html;
+        }
+
+        // --- Module 3: WALLET (Expense & Photo) ---
+
+        function renderWallet() {
+            contentDiv.innerHTML = `
+                <div class="space-y-6 p-2">
+                    <h2 class="text-xl font-medium border-b pb-2">Record New Expense</h2>
+                    <div class="muji-card p-4 space-y-3">
+                        <input type="text" id="expense-desc" class="muji-input w-full" placeholder="Item description (e.g., Gas, Park Entrance Fee)" maxlength="50">
+                        <input type="number" id="expense-amount" class="muji-input w-full" placeholder="Amount (USD)" step="0.01" min="0">
+                        <!-- Photo upload button -->
+                        <div class="flex flex-col space-y-2">
+                            <label for="expense-photo" class="text-sm font-medium text-gray-600">Attach Photo/Receipt (Optional - Compressed)</label>
+                            <input type="file" id="expense-photo" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-muji-accent file:text-white hover:file:bg-muji-dark">
+                        </div>
+                        <button onclick="addExpense()" class="muji-button w-full flex items-center justify-center">
+                            <i class="fas fa-plus-circle mr-2"></i> Add Expense
+                        </button>
+                        <!-- Canvas for image compression (hidden) -->
+                        <canvas id="photo-canvas" style="display:none;"></canvas>
+                    </div>
+
+                    <h2 class="text-xl font-medium border-b pb-2 mt-8">Expense History</h2>
+                    <div id="expense-list" class="space-y-3">
+                        ${appData.expenses.length === 0 ? '<p class="text-gray-500 italic">No expenses recorded yet.</p>' : ''}
+                    </div>
+                    <div class="text-right text-lg font-semibold pt-4 border-t border-muji-grey">
+                        Total Spent: <span id="total-spent">$0.00</span>
+                    </div>
+                </div>
+            `;
+            renderExpenseList();
+        }
+
+        /** Converts image to thumbnail and saves expense data. */
+        async function addExpense() {
+            const desc = document.getElementById('expense-desc').value.trim();
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            const photoInput = document.getElementById('expense-photo');
+            let thumbnail = '';
+
+            if (!desc || isNaN(amount) || amount <= 0) {
+                return alertBox('Please enter a valid description and amount.', 'error');
+            }
+
+            if (photoInput.files.length > 0) {
+                try {
+                    // Start compression/resizing to reduce LocalStorage footprint
+                    thumbnail = await compressImage(photoInput.files[0]);
+                } catch (error) {
+                    console.error("Image compression failed:", error);
+                    alertBox('Image processing failed. Expense saved without photo.', 'error');
+                }
+            }
+
+            const newExpense = {
+                id: Date.now(),
+                description: desc,
+                amount: amount,
+                timestamp: new Date().toLocaleString(),
+                thumbnail: thumbnail
+            };
+
+            appData.expenses.unshift(newExpense);
+            saveData();
+
+            // Clear inputs
+            document.getElementById('expense-desc').value = '';
+            document.getElementById('expense-amount').value = '';
+            photoInput.value = '';
+
+            renderExpenseList();
+            alertBox('Expense recorded successfully!', 'success');
+        }
+
+        /** Handles image compression via Canvas to Base64 thumbnail (Functional Requirement). */
+        function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.getElementById('photo-canvas');
+                        const ctx = canvas.getContext('2d');
+                        const MAX_WIDTH = 100; // Max size for thumbnail (pixels)
+
+                        // Calculate new dimensions while maintaining aspect ratio
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > MAX_WIDTH || height > MAX_WIDTH) {
+                            if (width > height) {
+                                height = height * (MAX_WIDTH / width);
+                                width = MAX_WIDTH;
+                            } else {
+                                width = width * (MAX_WIDTH / height);
+                                height = MAX_WIDTH;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        // Convert canvas to Base64 (JPEG, quality 0.7 to minimize size)
+                        resolve(canvas.toDataURL('image/jpeg', 0.7));
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function renderExpenseList() {
+            const listDiv = document.getElementById('expense-list');
+            if (!listDiv) return;
+
+            let total = 0;
+            let html = '';
+
+            appData.expenses.forEach(exp => {
+                total += exp.amount;
+                // Display photo thumbnail or a camera icon fallback
+                const thumbnailHtml = exp.thumbnail ?
+                    `<img src="${exp.thumbnail}" alt="Receipt Thumbnail" class="w-16 h-16 object-cover rounded-md mr-3 border border-muji-grey">` :
+                    `<div class="w-16 h-16 bg-muji-grey flex items-center justify-center rounded-md mr-3 text-gray-500 border border-muji-grey"><i class="fas fa-camera text-xl"></i></div>`;
+
+                html += `
+                    <div class="muji-card p-3 flex items-start justify-between bg-white">
+                        <div class="flex items-start">
+                            ${thumbnailHtml}
+                            <div>
+                                <p class="font-medium text-sm">${exp.description}</p>
+                                <p class="text-xs text-gray-400 mt-1">${exp.timestamp}</p>
+                                <!-- Using a button instead of confirm() for deletion -->
+                                <button onclick="deleteExpense(${exp.id})" class="text-xs text-red-500 hover:text-red-700 mt-1"><i class="fas fa-trash-alt mr-1"></i> Delete</button>
+                            </div>
+                        </div>
+                        <p class="font-bold text-lg text-muji-dark flex-shrink-0">$${exp.amount.toFixed(2)}</p>
+                    </div>
+                `;
+            });
+
+            listDiv.innerHTML = html;
+            document.getElementById('total-spent').textContent = `$${total.toFixed(2)}`;
+        }
+
+        function deleteExpense(id) {
+            // Confirmation logic (simplified for no-alert constraint)
+            appData.expenses = appData.expenses.filter(exp => exp.id !== id);
+            saveData();
+            renderExpenseList();
+            alertBox('Expense deleted.', 'info');
+        }
+
+        // --- Module 4: LISTS (Checklist & Notes) ---
+
+        function renderLists() {
+            contentDiv.innerHTML = `
+                <div class="space-y-8 p-2">
+                    <h2 class="text-xl font-medium border-b pb-2">Pre-Trip Checklist</h2>
+                    <div id="checklist-container" class="muji-card p-4 space-y-2">
+                        <!-- Checklist items rendered here -->
+                    </div>
+                    <div class="text-xs text-gray-500 italic text-center pt-2">Tap to check/uncheck items.</div>
+
+                    <h2 class="text-xl font-medium border-b pb-2 mt-8">Personal Notes</h2>
+                    <div class="muji-card p-4 space-y-3">
+                        <textarea id="note-input" class="muji-input w-full h-24" placeholder="Write a new note or memo..."></textarea>
+                        <button onclick="addNote()" class="muji-button w-full flex items-center justify-center">
+                            <i class="fas fa-pen-to-square mr-2"></i> Save Note
+                        </button>
+                    </div>
+                    <div id="notes-list" class="space-y-3">
+                        <!-- Notes rendered here -->
+                    </div>
+                </div>
+            `;
+            renderChecklist();
+            renderNotes();
+        }
+
+        function renderChecklist() {
+            const container = document.getElementById('checklist-container');
+            if (!container) return;
+
+            container.innerHTML = appData.checklist.map((item, index) => `
+                <div class="flex items-center space-x-3 p-2 rounded-md hover:bg-stone-50 transition duration-100 cursor-pointer" onclick="toggleChecklist(${index})">
+                    <!-- Disabled checkbox is for visual only, click handler is on the div -->
+                    <input type="checkbox" id="check-${index}" ${item.checked ? 'checked' : ''}
+                           class="w-4 h-4 text-muji-accent bg-gray-100 border-muji-grey rounded focus:ring-muji-accent" disabled>
+                    <label for="check-${index}" class="text-sm ${item.checked ? 'line-through text-gray-400' : 'text-muji-dark'}">${item.item}</label>
+                </div>
+            `).join('');
+        }
+
+        function toggleChecklist(index) {
+            appData.checklist[index].checked = !appData.checklist[index].checked;
+            saveData();
+            renderChecklist();
+        }
+
+        function addNote() {
+            const noteTextarea = document.getElementById('note-input');
+            const text = noteTextarea.value.trim();
+
+            if (text) {
+                const newNote = {
+                    id: Date.now(),
+                    text: text
+                };
+                appData.notes.unshift(newNote);
+                saveData();
+                noteTextarea.value = '';
+                renderNotes();
+                alertBox('Note saved.', 'success');
+            }
+        }
+
+        function renderNotes() {
+            const listDiv = document.getElementById('notes-list');
+            if (!listDiv) return;
+
+            if (appData.notes.length === 0) {
+                listDiv.innerHTML = '<p class="text-gray-500 italic">No personal notes yet.</p>';
+                return;
+            }
+
+            listDiv.innerHTML = appData.notes.map(note => {
+                // Regex to find URLs and replace them with link buttons (Functional Requirement)
+                const urlRegex = /(https?:\/\/[^\s]+)/g;
+                const processedText = note.text.replace(urlRegex, (url) => {
+                    // Extract domain name for cleaner button text
+                    let hostname = '';
+                    try { hostname = new URL(url).hostname; } catch(e) { hostname = 'Link'; }
+
+                    return `
+                        <a href="${url}" target="_blank" class="muji-button inline-flex items-center px-2 py-1 text-xs mt-1 mb-1 bg-muji-accent hover:bg-muji-dark">
+                            <i class="fas fa-link mr-1"></i> ${hostname.replace('www.', '')}
+                        </a>`;
+                });
+
+                return `
+                    <div class="muji-card p-3 bg-white space-y-2">
+                        <!-- Using whitespace-pre-wrap to respect line breaks from textarea input -->
+                        <div class="whitespace-pre-wrap text-sm leading-relaxed">${processedText}</div>
+                        <div class="flex justify-between items-center pt-2 border-t border-muji-grey mt-2">
+                            <p class="text-xs text-gray-400">${new Date(note.id).toLocaleDateString()}</p>
+                            <button onclick="deleteNote(${note.id})" class="text-xs text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash-alt"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deleteNote(id) {
+            appData.notes = appData.notes.filter(note => note.id !== id);
+            saveData();
+            renderNotes();
+            alertBox('Note deleted.', 'info');
+        }
+
+        // --- Module 5: INFO (Emergency & Weather) ---
+
+        function renderInfo() {
+            const police = "909-387-8313 (San Bernardino County Sheriff - Joshua Tree)";
+            const ambulance = "911";
+            const weatherLink = "https://forecast.weather.gov/MapClick.php?lat=34.0112&lon=-116.3155"; // Joshua Tree coordinates
+
+            contentDiv.innerHTML = `
+                <div class="space-y-8 p-2">
+                    <h2 class="text-xl font-medium border-b pb-2">Local Weather & Links</h2>
+                    <div class="muji-card p-4 space-y-3 bg-white">
+                        <p class="font-medium">Current Joshua Tree Forecast:</p>
+                        <!-- Local weather link (weather.gov) -->
+                        <a href="${weatherLink}" target="_blank" class="muji-button inline-flex items-center px-4 py-2 text-sm bg-muji-accent hover:bg-muji-dark">
+                            <i class="fas fa-cloud-sun-rain mr-2"></i> Check Weather (weather.gov)
+                        </a>
+                        <p class="text-xs text-gray-500 mt-3">Be prepared for cold desert nights and high winds in late December!</p>
+                    </div>
+
+                    <h2 class="text-xl font-medium border-b pb-2">Emergency Contacts</h2>
+                    <div class="muji-card p-4 space-y-3 bg-white">
+                        <div class="border-b pb-2">
+                            <p class="font-medium flex items-center"><i class="fas fa-fire-extinguisher mr-2 text-red-500"></i> Police / Ambulance / Fire</p>
+                            <p class="text-lg font-bold text-red-600 ml-6">911 (All Emergencies)</p>
+                        </div>
+                        <div class="border-b pb-2">
+                            <p class="font-medium flex items-center"><i class="fas fa-shield-alt mr-2 text-blue-500"></i> Local Police Non-Emergency</p>
+                            <p class="ml-6">${police}</p>
+                        </div>
+                        <div>
+                            <p class="font-medium flex items-center"><i class="fas fa-globe-americas mr-2 text-green-500"></i> Consulate/Office Info</p>
+                            <p class="ml-6 text-gray-500">N/A (Domestic US Travel)</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+
+        // --- Initialization ---
+
+        window.onload = () => {
+            loadData();
+            navigate(currentPage);
+        };
+
+    </script>
+</body>
+</html>
