@@ -13,10 +13,10 @@
     <style>
         /* Custom MUJI Minimalist Styling */
         :root {
-            --muji-offwhite: #f7f5f1;
-            --muji-grey: #e8e8e8;
-            --muji-dark: #333333;
-            --muji-accent: #a3b18a; /* Soft earth tone / Olive */
+            --muji-offwhite: #f7f5f1; /* Background/Input base */
+            --muji-grey: #e8e8e8;     /* Border/Accent */
+            --muji-dark: #333333;     /* Text/Primary */
+            --muji-accent: #a3b18a; /* Soft earth tone / Olive for highlight */
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -93,7 +93,7 @@
             border: 3px solid var(--muji-accent);
             z-index: 1;
         }
-        /* Prominent highlight color for assembly/travel */
+        /* Prominent highlight color for assembly/travel (Requested Feature) */
         .highlight-dot {
              border-color: #ef4444 !important; /* Tailwind red-500 */
              background-color: #fee2e2 !important; /* Tailwind red-100 */
@@ -144,7 +144,7 @@
         <!-- Dynamic Content Area -->
         <main id="content" class="space-y-6"></main>
 
-        <!-- Fixed Bottom Navigation -->
+        <!-- Fixed Bottom Navigation (RWD Requirement) -->
         <nav class="muji-nav flex justify-around p-2">
             <button onclick="navigate('itinerary')" class="flex flex-col items-center text-xs p-1 text-gray-500 hover:text-muji-dark">
                 <i class="fas fa-road text-lg"></i>
@@ -228,7 +228,7 @@
             }
         ];
 
-        // Initial checklist data for the LISTS module (including user essentials)
+        // Initial checklist data (Requested Feature)
         const initialChecklist = [
             { item: 'Powerbank', checked: false },
             { item: 'Charger', checked: false },
@@ -241,7 +241,7 @@
             { item: 'Download Offline Maps (Poor cell service in JT)', checked: false }
         ];
 
-        // --- Core Functions: LocalStorage Management ---
+        // --- Core Functions: LocalStorage Management (Required) ---
 
         /** Loads data from LocalStorage or uses initial defaults. */
         function loadData() {
@@ -280,6 +280,7 @@
                 localStorage.setItem('jt_planner_notes', JSON.stringify(appData.notes));
             } catch (e) {
                 console.error("Error saving data to LocalStorage:", e);
+                // Use custom alert, as window.alert() is forbidden
                 alertBox('Error: Could not save data. LocalStorage may be full.', 'error');
             }
         }
@@ -314,13 +315,10 @@
             renderPage(page);
             // Highlight active button in the bottom nav
             document.querySelectorAll('.muji-nav button').forEach(btn => {
-                if (btn.getAttribute('onclick').includes(`'${page}'`)) {
-                    btn.classList.add('text-muji-dark', 'font-medium');
-                    btn.classList.remove('text-gray-500');
-                } else {
-                    btn.classList.add('text-gray-500');
-                    btn.classList.remove('text-muji-dark', 'font-medium');
-                }
+                const isSelected = btn.getAttribute('onclick').includes(`'${page}'`);
+                btn.classList.toggle('text-muji-dark', isSelected);
+                btn.classList.toggle('font-medium', isSelected);
+                btn.classList.toggle('text-gray-500', !isSelected);
             });
         }
 
@@ -369,7 +367,7 @@
         // --- Module 1: ITINERARY (Daily Timeline & All Attractions List) ---
 
         function renderItinerary() {
-            // Sub-navigation buttons (Requirement)
+            // Sub-navigation buttons (Required Feature)
             let subNavHtml = `
                 <div class="flex justify-center p-2 mb-4 space-x-3">
                     <button onclick="setItinerarySubPage('daily')" class="sub-nav-button ${itinerarySubPage === 'daily' ? 'sub-nav-active' : 'sub-nav-inactive'}">
@@ -400,14 +398,14 @@
                 }
 
                 const isAssembly = item.type === 'assembly';
-                const dotClass = isAssembly ? 'highlight-dot' : '';
+                const dotClass = isAssembly ? 'highlight-dot' : ''; // Prominent highlight (Required Feature)
 
-                // Generate Map/Driving buttons
+                // Generate Map/Driving buttons (Required Feature)
                 let mapButtons = '';
                 if (item.mapLink) {
                     // Open Location
                     mapButtons += `<a href="${item.mapLink}" target="_blank" class="map-link-btn inline-flex items-center">
-                        <i class="fas fa-map-pin mr-1"></i> Open Location
+                        <i class="fas fa-map-pin mr-1"></i> Open in Maps
                     </a>`;
                     // Start Driving (using Google Maps directions link)
                     const drivingLink = `https://www.google.com/maps/dir/Current+Location/${encodeURIComponent(item.location)}`;
@@ -437,7 +435,7 @@
             const attractionTypes = ['sight', 'hike', 'attraction'];
             const attractions = itinerary
                 .filter(item => attractionTypes.includes(item.type))
-                .sort((a, b) => a.activity.localeCompare(b.activity)); // Sort alphabetically
+                .sort((a, b) => a.activity.localeCompare(b.activity)); // Sort alphabetically (Required Feature)
 
             let html = '<div class="space-y-3">';
 
@@ -479,7 +477,7 @@
             let html = '<div class="space-y-8">';
 
             guideSights.forEach(sight => {
-                // OpenStreetMap iframe embed for map visualization (functional requirement)
+                // OpenStreetMap iframe embed for map visualization (Required Feature)
                 const mapIframe = sight.map ? `
                     <div class="w-full h-48 mt-3 overflow-hidden rounded-lg border border-muji-grey">
                         <!-- OpenStreetMap iframe for visualization -->
@@ -512,7 +510,7 @@
                     <div class="muji-card p-4 space-y-3">
                         <input type="text" id="expense-desc" class="muji-input w-full" placeholder="Item description (e.g., Gas, Park Entrance Fee)" maxlength="50">
                         <input type="number" id="expense-amount" class="muji-input w-full" placeholder="Amount (USD)" step="0.01" min="0">
-                        <!-- Photo upload button -->
+                        <!-- Photo upload button (Required Feature) -->
                         <div class="flex flex-col space-y-2">
                             <label for="expense-photo" class="text-sm font-medium text-gray-600">Attach Photo/Receipt (Optional - Compressed)</label>
                             <input type="file" id="expense-photo" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-muji-accent file:text-white hover:file:bg-muji-dark">
@@ -549,7 +547,7 @@
 
             if (photoInput.files.length > 0) {
                 try {
-                    // Start compression/resizing to reduce LocalStorage footprint
+                    // Start compression/resizing to reduce LocalStorage footprint (Required Feature)
                     thumbnail = await compressImage(photoInput.files[0]);
                 } catch (error) {
                     console.error("Image compression failed:", error);
@@ -577,7 +575,7 @@
             alertBox('Expense recorded successfully!', 'success');
         }
 
-        /** Handles image compression via Canvas to Base64 thumbnail (Functional Requirement). */
+        /** Handles image compression via Canvas to Base64 thumbnail (Required Feature). */
         function compressImage(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -652,7 +650,7 @@
         }
 
         function deleteExpense(id) {
-            // Confirmation logic (simplified for no-alert constraint)
+            // Simplified deletion logic for no-alert constraint
             appData.expenses = appData.expenses.filter(exp => exp.id !== id);
             saveData();
             renderExpenseList();
@@ -733,7 +731,7 @@
             }
 
             listDiv.innerHTML = appData.notes.map(note => {
-                // Regex to find URLs and replace them with link buttons (Functional Requirement)
+                // Regex to find URLs and replace them with link buttons (Required Feature)
                 const urlRegex = /(https?:\/\/[^\s]+)/g;
                 const processedText = note.text.replace(urlRegex, (url) => {
                     // Extract domain name for cleaner button text
@@ -780,7 +778,7 @@
                     <h2 class="text-xl font-medium border-b pb-2">Local Weather & Links</h2>
                     <div class="muji-card p-4 space-y-3 bg-white">
                         <p class="font-medium">Current Joshua Tree Forecast:</p>
-                        <!-- Local weather link (weather.gov) -->
+                        <!-- Local weather link (Required Feature) -->
                         <a href="${weatherLink}" target="_blank" class="muji-button inline-flex items-center px-4 py-2 text-sm bg-muji-accent hover:bg-muji-dark">
                             <i class="fas fa-cloud-sun-rain mr-2"></i> Check Weather (weather.gov)
                         </a>
@@ -811,7 +809,8 @@
 
         window.onload = () => {
             loadData();
-            navigate(currentPage);
+            // Start on the Itinerary page
+            navigate('itinerary');
         };
 
     </script>
