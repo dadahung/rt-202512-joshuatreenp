@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Joshua Tree 12/28 — 12/30</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -94,11 +94,15 @@
             color: var(--muji-earth);
             font-weight: 300;
         }
+        
+        /* Smooth View Switching */
+        .view { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="pb-24 antialiased">
 
-    <div id="app" class="max-w-md mx-auto">
+    <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col">
         <!-- Persistent Header -->
         <header class="pt-10 pb-6 px-6 text-center border-b border-gray-100 mb-6 sticky top-0 bg-white/80 backdrop-blur-md z-40">
             <h1 class="text-xl font-light">Joshua Tree</h1>
@@ -176,7 +180,7 @@
             <div>
                 <h2 class="text-xs font-bold mb-4">Accommodation</h2>
                 <div class="muji-card p-4 text-sm">
-                    <p class="font-medium">Joshua Tree Rental</p>
+                    <p class="font-medium text-red-900">Joshua Tree Rental</p>
                     <p class="text-gray-500 mt-1">4949 1st Street East<br>Joshua Tree, CA 92252</p>
                     <a href="https://www.google.com/maps/search/?api=1&query=4949+1st+Street+East+Joshua+Tree+CA+92252" target="_blank" class="mt-4 block text-center border border-gray-200 py-2 text-xs text-gray-400">View on Map</a>
                 </div>
@@ -212,34 +216,35 @@
         const DATA = {
             itinerary: [
                 { day: 1, date: "Sat, 12/28", items: [
-                    { time: "09:00", title: "Depart Irvine", loc: "Irvine, CA", type: "travel", important: true },
-                    { time: "11:30", title: "West Entrance", loc: "Visitor Center", type: "attraction" },
-                    { time: "13:30", title: "Hidden Valley", loc: "1mi Nature Loop", type: "attraction" },
-                    { time: "14:30", title: "Barker Dam", loc: "1.1mi Loop", type: "attraction" },
-                    { time: "16:00", title: "Keys View", loc: "Sunset Point", type: "attraction" },
-                    { time: "17:00", title: "Rental Check-in", loc: "4949 1st St East", type: "travel", important: true }
+                    { time: "09:00", title: "Depart Irvine", loc: "Irvine, CA", type: "travel", important: true, note: "Start driving around 9am. Head east towards the desert." },
+                    { time: "11:30", title: "Joshua Tree West Entrance", loc: "Visitor Center", type: "attraction", note: "Pickup maps and check for park alerts. Purchase entry pass if needed." },
+                    { time: "13:30", title: "Hidden Valley", loc: "1mi Nature Loop", type: "attraction", note: "Easy 1-mile loop trail through massive rock formations. Perfect introduction to the landscape." },
+                    { time: "14:30", title: "Barker Dam", loc: "1.1mi Loop", type: "attraction", note: "Historical dam site. Easy flat loop, great for spotting bighorn sheep." },
+                    { time: "16:00", title: "Keys View", loc: "Sunset Point", type: "attraction", note: "Panoramic views of Coachella Valley and San Andreas Fault. High altitude, might be windy." },
+                    { time: "17:00", title: "Rental Check-in", loc: "4949 1st St East", type: "travel", important: true, note: "Arrive at the accommodation to settle in for the night." }
                 ]},
                 { day: 2, date: "Sun, 12/29", items: [
-                    { time: "09:00", title: "Skull Rock", loc: "Roadside Stop", type: "attraction" },
-                    { time: "10:00", title: "Cholla Cactus Garden", loc: "Nature Trail", type: "attraction" },
-                    { time: "11:30", title: "Arch Rock", loc: "Trailhead", type: "attraction" },
-                    { time: "14:00", title: "Cottonwood Spring", loc: "Palm Oasis", type: "attraction" }
+                    { time: "09:00", title: "Skull Rock", loc: "Roadside Stop", type: "attraction", note: "Famous rock formation right by the road. Quick and easy photo opportunity." },
+                    { time: "10:00", title: "Cholla Cactus Garden", loc: "Nature Trail", type: "attraction", note: "0.25-mile walk through a dense field of cacti. Do not touch—they 'jump'!" },
+                    { time: "11:30", title: "Arch Rock", loc: "Trailhead", type: "attraction", note: "0.5-mile easy trail to a stunning natural arch formation." },
+                    { time: "14:00", title: "Cottonwood Spring", loc: "Palm Oasis", type: "attraction", note: "A lush fan palm oasis in the Colorado Desert section of the park." }
                 ]},
                 { day: 3, date: "Mon, 12/30", items: [
-                    { time: "08:30", title: "Checkout", loc: "Rental", type: "travel", important: true },
-                    { time: "09:30", title: "The Living Desert Zoo", loc: "Palm Desert", type: "attraction" },
-                    { time: "13:30", title: "Palm Canyons", loc: "Indian Canyons", type: "attraction" },
-                    { time: "15:30", title: "Return to Irvine", loc: "Irvine, CA", type: "travel" }
+                    { time: "08:30", title: "Checkout", loc: "Joshua Tree", type: "travel", important: true, note: "Pack up and head south towards Palm Desert." },
+                    { time: "09:30", title: "The Living Desert Zoo", loc: "Palm Desert", type: "attraction", note: "Explore desert conservation and see giraffes, cheetahs, and desert plants." },
+                    { time: "13:30", title: "Palm Canyons", loc: "Indian Canyons", type: "attraction", note: "Visit the world's largest oasis of California fan palms. Easy walking trails available." },
+                    { time: "15:30", title: "Return to Irvine", loc: "Irvine, CA", type: "travel", note: "Heading home. Approx 2 to 2.5 hour drive depending on traffic." }
                 ]}
             ],
             guides: [
-                { title: "Hidden Valley", desc: "A rock-enclosed valley that legend says was used by cattle rustlers to hide their herds. The 1-mile loop is relatively flat and winds through massive boulders and Joshua Tree groves. It's the most iconic 'first look' at the park's geology." },
-                { title: "Barker Dam", desc: "Constructed by early cattlemen around 1900, this dam created a vital water source in the desert. In winter, you might see water reflecting the granite walls. It's a prime spot for Bighorn Sheep sightings in the early morning." },
-                { title: "Cholla Cactus Garden", desc: "A dense concentration of Cylindropuntia bigelovii, also known as 'Teddy Bear Cholla'. They look soft and fuzzy, but they are incredibly sharp and have barbs that 'jump' onto clothing or skin if brushed against." },
-                { title: "The Living Desert", desc: "Consistently ranked as one of the best zoos in the USA, it focuses on desert conservation. The botanical gardens represent four different desert biomes, and the giraffe feeding station is a highlight for visitors." },
-                { title: "Palm Canyons", desc: "Located in Indian Canyons, this is the world's largest California Fan Palm oasis. The contrast between the harsh desert cliffs and the lush, damp canyon floor creates a microclimate that feels like another world." }
+                { title: "Hidden Valley", desc: "A legendary rock-enclosed valley once rumored to be used by cattle rustlers to hide their herds. The 1-mile nature loop is one of the most popular trails because it features all of Joshua Tree's highlights: massive monzogranite boulders, namesake trees, and desert scrub. It is remarkably flat and easy for all ages." },
+                { title: "Barker Dam", desc: "Built by C.O. Barker around 1900, this dam was vital for the survival of cattle in the high desert. Today, the reservoir is a crucial watering hole for local wildlife, particularly desert bighorn sheep. The trail includes examples of Native American petroglyphs (though some were unfortunately enhanced by Hollywood film crews in the past)." },
+                { title: "Cholla Cactus Garden", desc: "Located at the transition zone between the higher Mojave Desert and the lower Colorado Desert, this garden features the 'Teddy Bear' Cholla. Despite their cuddly name, their barbs are notoriously painful. They reproduce by shedding 'joints' that attach to passing animals (or hikers), earning them the name 'jumping cactus'." },
+                { title: "The Living Desert", desc: "Located in Palm Desert, this 1,200-acre facility is a zoo and botanical garden dedicated to the deserts of the world. It’s highly rated for its conservation efforts and naturalistic habitats. It provides a structured and educational contrast to the wild exploration inside the National Park." },
+                { title: "Palm Canyons", desc: "Part of the Agua Caliente Band of Cahuilla Indians' ancestral land, Palm Canyon is home to the world’s largest grove of California Fan Palms (Washingtonia filifera). The contrast between the stark desert walls and the lush green canopy of the oasis floor is breathtaking. The first section of the trail is paved and very accessible." },
+                { title: "Keys View", desc: "This is the highest point in the park that you can drive to. On exceptionally clear days, the view stretches past the Salton Sea and Indio all the way to Signal Mountain in Mexico. It provides a literal bird's-eye view of the San Andreas Fault running through the valley below." }
             ],
-            checklist: ["Powerbank", "Charger", "USB Cable", "4-days worth of clothes", "Sunscreen", "Water (1gal/person)", "Physical Map"]
+            checklist: ["Powerbank", "Charger", "USB Cable", "4-days worth of clothes", "Sunscreen", "Water (1gal/person)", "Physical Map", "Park Pass / ID"]
         };
 
         // --- State Management ---
@@ -279,7 +284,7 @@
                 DATA.itinerary.forEach(day => {
                     html += `<div class="mb-10 relative">
                         <div class="timeline-line"></div>
-                        <h3 class="text-[10px] font-bold text-gray-400 mb-6 bg-white relative z-10 inline-block pr-4">DAY ${day.day} • ${day.date}</h3>`;
+                        <h3 class="text-[10px] font-bold text-gray-400 mb-6 bg-white relative z-10 inline-block pr-4 tracking-widest">DAY ${day.day} • ${day.date}</h3>`;
                     
                     day.items.forEach(item => {
                         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.title + ' ' + item.loc)}`;
@@ -288,15 +293,16 @@
                         html += `
                         <div class="relative pl-10 mb-6 group">
                             <div class="timeline-dot ${item.important ? 'important' : ''}" style="top: 6px;"></div>
-                            <div class="text-[10px] text-gray-400 mb-1">${item.time}</div>
+                            <div class="text-[10px] text-gray-400 mb-1 font-medium">${item.time}</div>
                             <div class="muji-card p-4">
                                 <div class="flex justify-between items-start">
                                     <div>
-                                        <h4 class="text-sm font-medium ${item.important ? 'text-red-900' : ''}">${item.title}</h4>
+                                        <h4 class="text-sm font-semibold ${item.important ? 'text-red-900' : 'text-gray-800'}">${item.title}</h4>
                                         <p class="text-[10px] text-gray-400 mt-0.5">${item.loc}</p>
                                     </div>
-                                    ${item.type === 'attraction' ? '<i class="fas fa-camera text-gray-100 text-xs"></i>' : ''}
+                                    ${item.type === 'attraction' ? '<i class="fas fa-camera text-gray-200 text-xs"></i>' : ''}
                                 </div>
+                                <p class="text-[11px] text-gray-500 mt-2 leading-relaxed">${item.note || ''}</p>
                                 <div class="flex gap-2 mt-4">
                                     <a href="${mapsUrl}" target="_blank" class="muji-btn-outline flex-1 text-center">Open Maps</a>
                                     <a href="${driveUrl}" target="_blank" class="muji-btn-outline flex-1 text-center bg-gray-50">Start Driving</a>
@@ -315,11 +321,13 @@
                 all.forEach(item => {
                     html += `
                     <div class="muji-card p-4 flex justify-between items-center">
-                        <div>
-                            <p class="text-sm font-medium">${item.title}</p>
-                            <p class="text-[10px] text-gray-400 uppercase">Sightseeing</p>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-800">${item.title}</p>
+                            <p class="text-[9px] text-gray-400 uppercase tracking-tighter">${item.loc}</p>
                         </div>
-                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.title)}" target="_blank" class="text-gray-300"><i class="fas fa-chevron-right"></i></a>
+                        <div class="flex gap-2">
+                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.title)}" target="_blank" class="w-8 h-8 flex items-center justify-center border border-gray-100 rounded text-gray-400"><i class="fas fa-location-dot text-xs"></i></a>
+                        </div>
                     </div>`;
                 });
                 html += `</div>`;
@@ -334,7 +342,7 @@
                     <h2 class="text-lg font-light border-b border-gray-100 pb-2 mb-4 text-gray-800">${g.title}</h2>
                     <p class="text-sm text-gray-600 leading-relaxed magazine-dropcap">${g.desc}</p>
                     <div class="mt-6 flex items-center text-[9px] uppercase tracking-widest text-gray-400 font-bold">
-                        <span class="w-8 h-px bg-gray-200 mr-2"></span> Joshua Tree Guide 
+                        <span class="w-8 h-px bg-gray-200 mr-2"></span> Field Guide Entry 
                     </div>
                 </article>
             `).join('');
@@ -380,7 +388,6 @@
             localStorage.setItem('jt_expenses', JSON.stringify(state.expenses));
             renderWallet();
             
-            // Clear
             document.getElementById('wallet-desc').value = '';
             document.getElementById('wallet-amt').value = '';
             document.getElementById('wallet-photo').value = '';
@@ -391,20 +398,20 @@
         function renderWallet() {
             const list = document.getElementById('wallet-list');
             let total = 0;
-            list.innerHTML = state.expenses.map(e => {
+            list.innerHTML = state.expenses.length ? state.expenses.map(e => {
                 total += e.amt;
                 return `
                 <div class="muji-card p-3 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         ${e.photo ? `<img src="${e.photo}" class="w-10 h-10 object-cover rounded-sm">` : `<div class="w-10 h-10 bg-gray-50 flex items-center justify-center text-gray-200 text-xs"><i class="fas fa-receipt"></i></div>`}
                         <div>
-                            <p class="text-xs font-medium">${e.desc}</p>
-                            <p class="text-[10px] text-gray-400">$${e.amt.toFixed(2)}</p>
+                            <p class="text-xs font-medium text-gray-800">${e.desc}</p>
+                            <p class="text-[10px] text-gray-400 font-mono">$${e.amt.toFixed(2)}</p>
                         </div>
                     </div>
-                    <button onclick="deleteExpense(${e.id})" class="text-gray-200 hover:text-red-800 p-2"><i class="fas fa-times"></i></button>
+                    <button onclick="deleteExpense(${e.id})" class="text-gray-200 hover:text-red-800 p-2 transition-colors"><i class="fas fa-times"></i></button>
                 </div>`;
-            }).reverse().join('');
+            }).reverse().join('') : `<div class="text-center py-10 text-gray-300 text-xs italic">No expenses recorded.</div>`;
             document.getElementById('wallet-total').innerText = `$${total.toFixed(2)}`;
         }
 
@@ -418,20 +425,20 @@
         function renderLists() {
             const checkContainer = document.getElementById('checklist-items');
             checkContainer.innerHTML = DATA.checklist.map(item => `
-                <div class="flex items-center gap-3 cursor-pointer" onclick="toggleCheck('${item}')">
-                    <i class="${state.checks[item] ? 'fas fa-check-square text-black' : 'far fa-square text-gray-300'} text-lg"></i>
-                    <span class="text-sm ${state.checks[item] ? 'line-through text-gray-400' : ''}">${item}</span>
+                <div class="flex items-center gap-3 cursor-pointer group" onclick="toggleCheck('${item}')">
+                    <i class="${state.checks[item] ? 'fas fa-check-square text-black' : 'far fa-square text-gray-300'} text-lg group-hover:text-black transition-colors"></i>
+                    <span class="text-sm ${state.checks[item] ? 'line-through text-gray-400' : 'text-gray-700'}">${item}</span>
                 </div>
             `).join('');
 
             const notesContainer = document.getElementById('notes-list');
             notesContainer.innerHTML = state.notes.map(n => {
                 const urlRegex = /(https?:\/\/[^\s]+)/g;
-                const html = n.text.replace(urlRegex, url => `<a href="${url}" target="_blank" class="inline-block bg-black text-white text-[9px] px-2 py-1 rounded ml-1">OPEN LINK</a>`);
+                const html = n.text.replace(urlRegex, url => `<a href="${url}" target="_blank" class="inline-block bg-black text-white text-[9px] px-2 py-1 rounded mt-2 uppercase tracking-widest font-bold">Open Link</a>`);
                 return `
-                <div class="muji-card p-4 text-xs leading-relaxed relative group">
-                    <div class="whitespace-pre-wrap">${html}</div>
-                    <button onclick="deleteNote(${n.id})" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-gray-300"><i class="fas fa-trash"></i></button>
+                <div class="muji-card p-4 text-xs leading-relaxed relative group bg-gray-50/30">
+                    <div class="whitespace-pre-wrap text-gray-600">${html}</div>
+                    <button onclick="deleteNote(${n.id})" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-800 transition-all"><i class="fas fa-trash text-[10px]"></i></button>
                 </div>`;
             }).join('');
         }
